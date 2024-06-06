@@ -22,13 +22,19 @@ public class DiscordBot {
         slashCommands(api.build());
     }
 
+    public static void setStatus(String status) {
+        JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
+        api.setActivity(Activity.competing(status));
+    }
+
     public static void slashCommands(JDA api) {
         CommandListUpdateAction commands = api.updateCommands();
 
         // say command
         commands.addCommands (
             Commands.slash("Say", "Make the bot say a message")
-                    .addOption(STRING, "Message", "Message for the bot to repeat", true)
+                    .addOption(STRING, "content", "Message for the bot to repeat", true)
+                    .setGuildOnly(true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_SEND))
         );
         // set status

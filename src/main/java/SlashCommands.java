@@ -5,10 +5,11 @@ public class SlashCommands extends ListenerAdapter {
     public void onSlashCommandInteraction (SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "Say":
-                say(event, event.getOption("Message").getAsString());
+                say(event, event.getOption("content").getAsString());
                 break;
-            case "":
-
+            case "Set Status":
+                DiscordBot.setStatus(event.getOption("content").getAsString());
+                break;
         }
     }
 
