@@ -3,8 +3,10 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import javax.security.auth.login.LoginException;
@@ -22,25 +24,50 @@ public class DiscordBot {
         slashCommands(api.build());
     }
 
-    public static void setStatus(String status) {
+    // set status method
+    public static void setStatus(String activity, String status) {
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
-        api.setActivity(Activity.competing(status));
+        api.setStatus(OnlineStatus.DO_NOT_DISTURB);
+
+        switch (activity) {
+            case "playing":
+                api.setActivity(Activity.playing(status));
+                break;
+            case "competing":
+                api.setActivity(Activity.competing(status));
+                break;
+            case "listening":
+                api.setActivity(Activity.listening(status));
+                break;
+            case "custom":
+                api.setActivity(Activity.customStatus(status));
+                break;
+        }
+        api.build();
     }
 
+    // all the slash commands !!!!
     public static void slashCommands(JDA api) {
-        CommandListUpdateAction commands = api.updateCommands();
+        CommandListUpdateAction commands = api.updateCommands(); // can take upwards of an hour
 
         // say command
         commands.addCommands (
-            Commands.slash("Say", "Make the bot say a message")
+            Commands.slash("say", "Make the bot say a message")
                     .addOption(STRING, "content", "Message for the bot to repeat", true)
                     .setGuildOnly(true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_SEND))
         );
-        // set status
+        // set status command
         commands.addCommands(
-            Commands.slash("Set Status", "Change the bot's status")
-                    .addOption(STRING,"content", "Status to be displayed",true)
+            Commands.slash("setstatus", "Change the bot's status")
+                    .addOptions(new OptionData(STRING,"type", "The Type of Status",true)
+                            .setRequired(true)
+                            .addChoices(new Command.Choice("playing","playing"))
+                            .addChoices(new Command.Choice("competing in","competing"))
+                            .addChoices(new Command.Choice("listening to", "listening"))
+                            .addChoices(new Command.Choice("custom status", "custom")))
+                    .addOptions(new OptionData(STRING, "content", "Status Info", true)
+                            .setRequired(true))
         );
 
         commands.queue();
