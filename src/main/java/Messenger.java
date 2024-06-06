@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class Messenger extends ListenerAdapter {
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot()) return;
+        if (event.getAuthor().isBot()) return; // ignores other bots
 
         Message message = event.getMessage();
         MessageChannel channel = event.getChannel();
