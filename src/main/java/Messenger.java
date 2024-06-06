@@ -14,7 +14,7 @@ public class Messenger extends ListenerAdapter {
         String msg = "";
 
         // dad joke
-        if (content.toLowerCase().contains("im ") || content.toLowerCase().contains("i'm" )) {
+        if (content.toLowerCase().contains("im ") || content.toLowerCase().contains("i'm" ) || content.toLowerCase().contains("i’m" )) {
             if (content.toLowerCase().contains("im ")) {
                 msg = "hi " + content.substring(content.toLowerCase().indexOf("im ") + 3);
             }
@@ -26,8 +26,8 @@ public class Messenger extends ListenerAdapter {
         }
 
         // funny
-        if(content.contains("kavin") && event.getGuild().getId().equals("1121972907522920540")) {
-            channel.sendMessage("<@524996439244406811>").queue();
+        if(content.contains(System.getenv("trigger")) && event.getGuild().getId().equals(System.getenv("funnyServer"))) {
+            channel.sendMessage("<@" + System.getenv("targetID") + ">").queue();
         }
     }
 }
