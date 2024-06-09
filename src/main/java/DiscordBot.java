@@ -81,6 +81,13 @@ public class DiscordBot {
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ALL_VOICE_PERMISSIONS))
         );
 
+        // leave voice channel
+        commands.addCommands(
+                Commands.slash("leavevc","Have Arcaneous leave the voice channel in this server")
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ALL_VOICE_PERMISSIONS))
+        );
+
         commands.queue();
     }
 }

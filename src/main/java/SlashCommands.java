@@ -21,9 +21,20 @@ public class SlashCommands extends ListenerAdapter {
                 break;
 
             case "joinvc":
-                Music.joinChannel(event, event.getOption("vc").getAsString());
+                Music.joinVoice(event, event.getOption("vc").getAsString());
                 event.reply("👍").queue();
                 break;
+
+            case "leavevc":
+                if (!Music.leaveVoice(event)) {
+                    event.reply("I am not in any voice channel in this sever");
+                }
+                else {
+                    event.reply("👍").queue();
+                }
+
+                break;
+
             default:
                 event.reply("I can't handle that command right now :(").setEphemeral(true).queue();
                 System.out.println("ERROR!! Event name: " + event.getName());
