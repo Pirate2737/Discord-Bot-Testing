@@ -65,7 +65,8 @@ public class DiscordBot {
                             .addChoices(new Command.Choice("playing","playing"))
                             .addChoices(new Command.Choice("competing in","competing"))
                             .addChoices(new Command.Choice("listening to", "listening"))
-                            .addChoices(new Command.Choice("custom status", "custom")))
+                            .addChoices(new Command.Choice("custom status", "custom"))
+                            .addChoices(new Command.Choice("clear status", "clear")))
                     .addOptions(new OptionData(STRING, "content", "Status Info", true)
                             .setRequired(true))
         );
