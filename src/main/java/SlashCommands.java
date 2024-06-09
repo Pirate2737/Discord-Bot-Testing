@@ -9,6 +9,7 @@ public class SlashCommands extends ListenerAdapter {
             case "say":
                 say(event, event.getOption("content").getAsString());
                 break;
+
             case "setstatus":
                 if(!event.getUser().getId().equals(System.getenv("ownerID"))) {
                     event.reply("fine").queue();
@@ -17,6 +18,11 @@ public class SlashCommands extends ListenerAdapter {
                 }
                 DiscordBot.setStatus(event.getOption("type").getAsString(), event.getOption("content").getAsString());
                 event.reply("👍").setEphemeral(true).queue();
+                break;
+
+            case "joinvc":
+                Music.joinChannel(event, event.getOption("vc").getAsString());
+                event.reply("👍").queue();
                 break;
             default:
                 event.reply("I can't handle that command right now :(").setEphemeral(true).queue();

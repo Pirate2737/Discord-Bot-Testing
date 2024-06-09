@@ -20,17 +20,17 @@ public class Messenger extends ListenerAdapter {
         }
 
         // funny
-        if(content.toLowerCase().contains(System.getenv("trigger")) && event.getGuild().getId().equals(System.getenv("funnyServer"))) {
+        if (content.toLowerCase().contains(System.getenv("trigger")) && event.getGuild().getId().equals(System.getenv("funnyServer"))) {
             message.reply("<@" + System.getenv("targetID") + "> wakey wakey").queue();
         }
 
         // response to name
-        if(content.contains(System.getenv("botID")) || content.toLowerCase().contains(System.getenv("botName"))) {
+        if (content.contains(System.getenv("botID")) || content.toLowerCase().contains(System.getenv("botName"))) {
             nameResponse(message, content);
         }
 
         // amogus
-        if(content.toLowerCase().contains("among")) {
+        if (content.toLowerCase().contains("among")) {
             message.addReaction(Emoji.fromFormatted("<:imposter:792647479589994516>")).queue();
         }
     }

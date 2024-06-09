@@ -3,6 +3,7 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -16,7 +17,7 @@ public class DiscordBot {
     public static void main(String[] args) throws LoginException {
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
-        api.addEventListeners(new Messenger(), new SlashCommands());
+        api.addEventListeners(new Messenger(), new SlashCommands(), new Music());
         api.enableIntents(GatewayIntent.MESSAGE_CONTENT);
         api.setActivity(Activity.competing("amogus"));
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
@@ -54,9 +55,9 @@ public class DiscordBot {
         commands.addCommands (
             Commands.slash("say", "Make the bot say a message")
                     .addOption(STRING, "content", "Message for the bot to repeat", true)
-                    .setGuildOnly(true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_SEND))
         );
+
         // set status command
         commands.addCommands(
             Commands.slash("setstatus", "Change the bot's status")
@@ -69,6 +70,15 @@ public class DiscordBot {
                             .addChoices(new Command.Choice("clear status", "clear")))
                     .addOptions(new OptionData(STRING, "content", "Status Info", true)
                             .setRequired(true))
+        );
+
+        // join voice channel
+        commands.addCommands(
+                Commands.slash("joinvc", "Have Arcaneous join a voice channel")
+                        .addOptions(new OptionData(CHANNEL, "vc", "Name of the voice channel", true)
+                                .setChannelTypes(ChannelType.VOICE))
+                        .setGuildOnly(true)
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ALL_VOICE_PERMISSIONS))
         );
 
         commands.queue();
