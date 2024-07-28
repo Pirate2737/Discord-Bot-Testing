@@ -16,8 +16,10 @@ public class SlashCommands extends ListenerAdapter {
                     //event.reply("nuh uh 👎").queue();
                     //break;
                 }
-                DiscordBot.setStatus(event.getOption("type").getAsString(), event.getOption("content").getAsString());
+
+                DiscordBot.writeActivityToJSON(event.getOption("type").getAsString(), event.getOption("content").getAsString());
                 event.reply("👍").setEphemeral(true).queue();
+
                 break;
 
             case "joinvc":
@@ -60,7 +62,7 @@ public class SlashCommands extends ListenerAdapter {
                 event.editButton(event.getButton().withDisabled(true)).queue();
             }
             else {
-                event.reply("that is not your message to do that on es em aych u weirdo").setEphemeral(true).queue();
+                event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
             }
         }
     }

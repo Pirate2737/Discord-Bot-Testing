@@ -1,3 +1,11 @@
+import net.dv8tion.jda.api.managers.Presence;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -19,16 +27,53 @@ public class DiscordBot {
 
         api.addEventListeners(new Messenger(), new SlashCommands(), new Music());
         api.enableIntents(GatewayIntent.MESSAGE_CONTENT);
-        api.setActivity(Activity.competing("amogus"));
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
+        readActivityFromJSON("status.json");
+
         slashCommands(api.build());
+    }
+
+    public static void readActivityFromJSON(String fileName) {
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(fileName)));
+            JSONObject activity = new JSONObject(content);
+
+            if (activity.has("Activity Type") && activity.has("Status")) {
+                String type = activity.getString("Activity Type");
+                String status = activity.getString("Status");
+
+                setStatus(type, status);
+            }
+
+        } catch (IOException | JSONException e) {
+            System.err.println(e.toString());
+        }
+    }
+
+    public static void writeActivityToJSON(String activity, String status) {
+        JSONObject newStatus = new JSONObject();
+        newStatus.put("Activity Type", activity);
+        newStatus.put("Status", status);
+
+        String fileName = "status.json";
+        try (FileWriter file = new FileWriter(fileName)) {
+            file.write(newStatus.toString());
+            file.flush();
+
+        }
+        catch (IOException e) {
+            System.out.println(e.fillInStackTrace().toString());
+        }
+
+        setStatus(activity, status);
     }
 
     // set status method
     public static void setStatus(String activity, String status) {
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
+        api.setActivity(null);
 
         switch (activity) {
             case "playing":
@@ -40,11 +85,15 @@ public class DiscordBot {
             case "listening":
                 api.setActivity(Activity.listening(status));
                 break;
+            case "streaming":
+                api.setActivity(Activity.streaming(status, "https://twitch.tv/innerslothdevs"));
+                break;
             case "custom":
                 api.setActivity(Activity.customStatus(status));
                 break;
         }
-        api.build();
+
+        slashCommands(api.build());
     }
 
     // all the slash commands !!!!
@@ -60,16 +109,17 @@ public class DiscordBot {
 
         // set status command
         commands.addCommands(
-            Commands.slash("setstatus", "Change the bot's status")
+            Commands.slash("setstatus", "Change the bot's activity status")
                     .addOptions(new OptionData(STRING,"type", "The Type of Status",true)
                             .setRequired(true)
                             .addChoices(new Command.Choice("playing","playing"))
                             .addChoices(new Command.Choice("competing in","competing"))
                             .addChoices(new Command.Choice("listening to", "listening"))
-                            .addChoices(new Command.Choice("custom status", "custom"))
-                            .addChoices(new Command.Choice("clear status", "clear")))
+                            .addChoices(new Command.Choice("streaming", "streaming"))
+                            .addChoices(new Command.Choice("custom status", "custom")))
                     .addOptions(new OptionData(STRING, "content", "Status Info", true)
-                            .setRequired(true))
+                            .setRequired(true)
+                            .setMaxLength(128))
         );
 
         // join voice channel

@@ -3,6 +3,7 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import java.util.ArrayList;
 
 public class Messenger extends ListenerAdapter {
 
@@ -35,16 +36,28 @@ public class Messenger extends ListenerAdapter {
         }
     }
 
-    public void dadReplyNEW(Message message, String content) {
-        /*
-            Goal: recognize "im" regardless of non-letter chars before and after the word
-                  and ignore up to two non-letter chars in the middle of the word
-
-            Step 1: generate a new string based on 'content' that does not contain non-keyboard characters
-            Step 2: locate index of "im", if any            -- arrays?
-            Step 3: if found, check
-         */
-    }
+//    public void dadReplyNEW(Message message, String content) {
+//        /*
+//            Goal: recognize "im" regardless of non-letter chars before and after the word
+//                  and ignore up to two non-letter chars in the middle of the word
+//
+//            Step 1: generate a new string based on 'content' that does not contain non-keyboard characters
+//            Step 2: locate index of "im", if any            -- arrays?
+//            Step 3: if found, check
+//         */
+//        ArrayList<String> words = new ArrayList<String>();
+//        String temp = "";
+//
+//        for (int i=0; i<content.length(); i++) {
+//            if (content.substring(i, i+1).)
+//            temp += content.substring(i, i+1);
+//
+//            if (temp.equals(" ")) {
+//                words.add(temp.substring(0, temp.length()-1));
+//                temp = "";
+//            }
+//        }
+//    }
 
     public String dadReply(Message message, String content) {
         String msg;
@@ -58,14 +71,15 @@ public class Messenger extends ListenerAdapter {
         return msg;
     }
 
-    public void nameResponse(Message message, String content) {
+    public void nameResponse (Message message, String content) {
         String[] responses = new String[] {
                 "ay, im walkin' over here",
                 "whaddup boss",
                 "sup",
                 "go away",
                 "stop im on roblox rn",
-                "ill be right there, press alt+f4 to see a cool trick in the meantime"
+                "ill be right there, press alt+f4 to see a cool trick in the meantime",
+                "ready to hop on amogus?"
         };
         int num = (int)(Math.random()*responses.length);
 
