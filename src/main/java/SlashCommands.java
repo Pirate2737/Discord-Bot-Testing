@@ -18,6 +18,7 @@ public class SlashCommands extends ListenerAdapter {
                 }
 
                 DiscordBot.writeActivityToJSON(event.getOption("type").getAsString(), event.getOption("content").getAsString());
+                DiscordBot.setStatus(event.getJDA().getPresence(), event.getOption("type").getAsString(), event.getOption("content").getAsString());
                 event.reply("👍").setEphemeral(true).queue();
 
                 break;

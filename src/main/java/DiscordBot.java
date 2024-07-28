@@ -29,12 +29,13 @@ public class DiscordBot {
         api.enableIntents(GatewayIntent.MESSAGE_CONTENT);
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
-        readActivityFromJSON("status.json");
+        JDA jda = api.build();
 
-        slashCommands(api.build());
+        readActivityFromJSON("status.json", jda.getPresence());
+        slashCommands(jda);
     }
 
-    public static void readActivityFromJSON(String fileName) {
+    public static void readActivityFromJSON(String fileName, Presence presence) {
         try {
             String content = new String(Files.readAllBytes(Paths.get(fileName)));
             JSONObject activity = new JSONObject(content);
@@ -43,7 +44,7 @@ public class DiscordBot {
                 String type = activity.getString("Activity Type");
                 String status = activity.getString("Status");
 
-                setStatus(type, status);
+                setStatus(presence, type, status);
             }
 
         } catch (IOException | JSONException e) {
@@ -65,35 +66,28 @@ public class DiscordBot {
         catch (IOException e) {
             System.out.println(e.fillInStackTrace().toString());
         }
-
-        setStatus(activity, status);
     }
 
     // set status method
-    public static void setStatus(String activity, String status) {
-        JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
-        api.setStatus(OnlineStatus.DO_NOT_DISTURB);
-        api.setActivity(null);
+    public static void setStatus(Presence presence, String activity, String status) {
 
         switch (activity) {
             case "playing":
-                api.setActivity(Activity.playing(status));
+                presence.setActivity(Activity.playing(status));
                 break;
             case "competing":
-                api.setActivity(Activity.competing(status));
+                presence.setActivity(Activity.competing(status));
                 break;
             case "listening":
-                api.setActivity(Activity.listening(status));
+                presence.setActivity(Activity.listening(status));
                 break;
             case "streaming":
-                api.setActivity(Activity.streaming(status, "https://twitch.tv/innerslothdevs"));
+                presence.setActivity(Activity.streaming(status, "https://twitch.tv/innerslothdevs"));
                 break;
             case "custom":
-                api.setActivity(Activity.customStatus(status));
+                presence.setActivity(Activity.customStatus(status));
                 break;
         }
-
-        slashCommands(api.build());
     }
 
     // all the slash commands !!!!
