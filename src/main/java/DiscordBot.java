@@ -1,4 +1,3 @@
-import net.dv8tion.jda.api.managers.Presence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.FileWriter;
@@ -18,6 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.managers.Presence;
 import javax.security.auth.login.LoginException;
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
