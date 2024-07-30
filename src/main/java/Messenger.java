@@ -1,6 +1,6 @@
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.util.ArrayList;
@@ -11,9 +11,7 @@ public class Messenger extends ListenerAdapter {
         if (event.getAuthor().isBot() /* && !event.getAuthor().getId().equals(System.getenv("botID"))*/) return; // ignores other bots
 
         Message message = event.getMessage();
-        MessageChannel channel = event.getChannel();
         String content = message.getContentRaw();
-        String msg = "";
 
         // dad joke
         if (content.toLowerCase().contains("im ") || content.toLowerCase().contains("i'm" ) || content.toLowerCase().contains("i’m" )) {
@@ -27,7 +25,7 @@ public class Messenger extends ListenerAdapter {
 
         // response to name
         if (content.contains(System.getenv("botID")) || content.toLowerCase().contains(System.getenv("botName"))) {
-            nameResponse(message, content);
+            nameResponse(message, event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size()))));
         }
 
         // amogus
@@ -71,7 +69,7 @@ public class Messenger extends ListenerAdapter {
         return msg;
     }
 
-    public void nameResponse (Message message, String content) {
+    public void nameResponse (Message message, RichCustomEmoji emoji) {
         String[] responses = new String[] {
                 "ay, im walkin' over here",
                 "whaddup boss",

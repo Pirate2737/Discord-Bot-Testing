@@ -23,6 +23,7 @@ import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
 public class DiscordBot {
     public static void main(String[] args) throws LoginException {
+
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
         api.addEventListeners(new Messenger(), new SlashCommands(), new Music());
@@ -30,6 +31,12 @@ public class DiscordBot {
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
         JDA jda = api.build();
+
+        // Shutdown hook to close bot
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            jda.shutdownNow();
+            System.out.println("Shutdown hook ran!");
+        }));
 
         readActivityFromJSON("status.json", jda.getPresence());
         slashCommands(jda);
@@ -44,7 +51,7 @@ public class DiscordBot {
                 String type = activity.getString("Activity Type");
                 String status = activity.getString("Status");
 
-                setStatus(presence, type, status);
+                setActivity(presence, type, status);
             }
 
         } catch (IOException | JSONException e) {
@@ -69,7 +76,7 @@ public class DiscordBot {
     }
 
     // set status method
-    public static void setStatus(Presence presence, String activity, String status) {
+    public static void setActivity(Presence presence, String activity, String status) {
 
         switch (activity) {
             case "playing":
@@ -103,16 +110,14 @@ public class DiscordBot {
 
         // set status command
         commands.addCommands(
-            Commands.slash("setstatus", "Change the bot's activity status")
-                    .addOptions(new OptionData(STRING,"type", "The Type of Status",true)
-                            .setRequired(true)
+            Commands.slash("setactivity", "Change the bot's activity status")
+                    .addOptions(new OptionData(STRING,"activity", "the type of status",true)
                             .addChoices(new Command.Choice("playing","playing"))
                             .addChoices(new Command.Choice("competing in","competing"))
                             .addChoices(new Command.Choice("listening to", "listening"))
                             .addChoices(new Command.Choice("streaming", "streaming"))
-                            .addChoices(new Command.Choice("custom status", "custom")))
-                    .addOptions(new OptionData(STRING, "content", "Status Info", true)
-                            .setRequired(true)
+                            .addChoices(new Command.Choice("custom Status", "custom")))
+                    .addOptions(new OptionData(STRING, "activity status", "Message to be displayed alongside the activity type", true)
                             .setMaxLength(128))
         );
 
@@ -122,14 +127,14 @@ public class DiscordBot {
                         .addOptions(new OptionData(CHANNEL, "vc", "Name of the voice channel", true)
                                 .setChannelTypes(ChannelType.VOICE))
                         .setGuildOnly(true)
-                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ALL_VOICE_PERMISSIONS))
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL))
         );
 
         // leave voice channel
         commands.addCommands(
                 Commands.slash("leavevc","Have Arcaneous leave the voice channel in this server")
                         .setGuildOnly(true)
-                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.ALL_VOICE_PERMISSIONS))
+                        .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL))
         );
 
         commands.queue();

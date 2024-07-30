@@ -18,7 +18,7 @@ public class SlashCommands extends ListenerAdapter {
                 }
 
                 DiscordBot.writeActivityToJSON(event.getOption("type").getAsString(), event.getOption("content").getAsString());
-                DiscordBot.setStatus(event.getJDA().getPresence(), event.getOption("type").getAsString(), event.getOption("content").getAsString());
+                DiscordBot.setActivity(event.getJDA().getPresence(), event.getOption("type").getAsString(), event.getOption("content").getAsString());
                 event.reply("👍").setEphemeral(true).queue();
 
                 break;
@@ -30,7 +30,7 @@ public class SlashCommands extends ListenerAdapter {
 
             case "leavevc":
                 if (!Music.leaveVoice(event)) {
-                    event.reply("I am not in any voice channel in this sever");
+                    event.reply("I am not in any voice channel in this sever").queue();
                 }
                 else {
                     event.reply("👍").queue();
