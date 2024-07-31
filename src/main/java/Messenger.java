@@ -4,33 +4,58 @@ import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import static java.lang.Thread.sleep;
 
 public class Messenger extends ListenerAdapter {
 
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot() /* && !event.getAuthor().getId().equals(System.getenv("botID"))*/) return; // ignores other bots
 
+        int rng = (int) (Math.random() * 100);
+
         Message message = event.getMessage();
         String content = message.getContentRaw();
+        String contentLowerCase = message.getContentRaw().toLowerCase();
 
         // dad joke
-        if (content.toLowerCase().contains("im ") || content.toLowerCase().contains("i'm" ) || content.toLowerCase().contains("i’m" )) {
-            message.reply( dadReply(message, content) ).queue(); // Important to call .queue() on the RestAction returned by sendMessage(...)
-        }
+        if (contentLowerCase.contains("im ") || contentLowerCase.contains("i'm ") || contentLowerCase.contains("i’m ")) {
+            message.getChannel().sendTyping().queue();
 
-        // funny
-        if (content.toLowerCase().contains(System.getenv("trigger")) && event.getGuild().getId().equals(System.getenv("funnyServer"))) {
-            message.reply("<@" + System.getenv("targetID") + "> wakey wakey").queue();
+            if (rng > 50) {
+                try {
+                    sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                message.reply(dadReply(message, content)).queue();
+            }
         }
 
         // response to name
-        if (content.contains(System.getenv("botID")) || content.toLowerCase().contains(System.getenv("botName"))) {
+        if (content.contains(System.getenv("botID")) || contentLowerCase.contains(System.getenv("botName"))) {
             nameResponse(message, event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size()))));
         }
 
         // amogus
-        if (content.toLowerCase().contains("among")) {
+        if (contentLowerCase.contains("among")) {
             message.addReaction(Emoji.fromFormatted("<:imposter:792647479589994516>")).queue();
+        }
+
+        // responders in funny server
+        if (event.getGuild().getId().equals(System.getenv("funnyServer"))) {
+
+            // funny ping
+            if (contentLowerCase.contains(System.getenv("trigger"))) {
+                message.reply("<@" + System.getenv("targetID") + "> wakey wakey").queue();
+            }
+
+            // tweakin timeout
+            if (contentLowerCase.contains("tweakin")) {
+                event.getGuild().timeoutFor(message.getAuthor(), 37, TimeUnit.SECONDS).queue();
+                message.reply("smh").queue();
+            }
         }
     }
 
