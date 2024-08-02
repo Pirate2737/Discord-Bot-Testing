@@ -10,16 +10,12 @@ public class SlashCommands extends ListenerAdapter {
                 say(event, event.getOption("content").getAsString());
                 break;
 
-            case "setstatus":
-                if(!event.getUser().getId().equals(System.getenv("ownerID"))) {
-                    event.reply("fine").queue();
-                    //event.reply("nuh uh 👎").queue();
-                    //break;
-                }
+            case "setactivity":
+                String activityType = event.getOption("activity").getAsString();
+                String content = event.getOption("content").getAsString();
 
-                DiscordBot.writeActivityToJSON(event.getOption("type").getAsString(), event.getOption("content").getAsString());
-                DiscordBot.setActivity(event.getJDA().getPresence(), event.getOption("type").getAsString(), event.getOption("content").getAsString());
-                event.reply("👍").setEphemeral(true).queue();
+                System.out.println(event.getUser().getName() + " used the setstatus command: " + activityType + " " + content);
+                setActivityHandler(event, activityType, content);
 
                 break;
 
@@ -45,7 +41,7 @@ public class SlashCommands extends ListenerAdapter {
     }
 
     public void say (SlashCommandInteractionEvent event, String content) {
-        if(content.length() > 100) {
+        if (content.length() > 100) {
             event.reply("stop yappin man")
                     .addActionRow(
                             Button.danger("bypassYapLimit","Bypass Yap Limit 👎")
@@ -54,6 +50,18 @@ public class SlashCommands extends ListenerAdapter {
         }
 
         event.reply(content).queue();
+    }
+
+    public void setActivityHandler (SlashCommandInteractionEvent event, String activityType, String content) {
+        if(!event.getUser().getId().equals(System.getenv("ownerID"))) {
+            event.reply("fine").queue();
+        }
+        else {
+            event.reply("👍").setEphemeral(true).queue();
+        }
+
+        DiscordBot.writeActivityToJSON(activityType, content);
+        DiscordBot.setActivity(event.getJDA().getPresence(), activityType, content);
     }
 
     public void onButtonInteraction(ButtonInteractionEvent event) {

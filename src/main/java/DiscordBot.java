@@ -44,8 +44,8 @@ public class DiscordBot {
 
     public static void readActivityFromJSON(String fileName, Presence presence) {
         try {
-            String content = new String(Files.readAllBytes(Paths.get(fileName)));
-            JSONObject activity = new JSONObject(content);
+            String contentFromFile = new String(Files.readAllBytes(Paths.get(fileName)));
+            JSONObject activity = new JSONObject(contentFromFile);
 
             if (activity.has("Activity Type") && activity.has("Status")) {
                 String type = activity.getString("Activity Type");
@@ -117,7 +117,7 @@ public class DiscordBot {
                             .addChoices(new Command.Choice("listening to", "listening"))
                             .addChoices(new Command.Choice("streaming", "streaming"))
                             .addChoices(new Command.Choice("custom Status", "custom")))
-                    .addOptions(new OptionData(STRING, "activity status", "Message to be displayed alongside the activity type", true)
+                    .addOptions(new OptionData(STRING, "content", "Message to be displayed alongside the activity type", true)
                             .setMaxLength(128))
         );
 

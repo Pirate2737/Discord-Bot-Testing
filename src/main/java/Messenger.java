@@ -1,6 +1,5 @@
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
-import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import java.util.ArrayList;
@@ -11,13 +10,13 @@ import static java.lang.Thread.sleep;
 public class Messenger extends ListenerAdapter {
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() /* && !event.getAuthor().getId().equals(System.getenv("botID"))*/) return; // ignores other bots
+        if (event.getAuthor().isBot()) return; // ignores bots
 
         int rng = (int) (Math.random() * 100);
-
         Message message = event.getMessage();
         String content = message.getContentRaw();
         String contentLowerCase = message.getContentRaw().toLowerCase();
+        ArrayList<String> words = messageContentToArrayList(content);
 
         // dad joke
         if (contentLowerCase.contains("im ") || contentLowerCase.contains("i'm ") || contentLowerCase.contains("i’m ")) {
@@ -29,16 +28,17 @@ public class Messenger extends ListenerAdapter {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                message.reply(dadReply(message, content)).queue();
+                message.reply(dadReply(content)).queue();
             }
         }
 
-        // response to name
+        // response to its own name
         if (content.contains(System.getenv("botID")) || contentLowerCase.contains(System.getenv("botName"))) {
-            nameResponse(message, event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size()))));
+            // event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size())))
+            message.reply(nameResponse()).queue();
         }
 
-        // amogus
+        // amogus emoji reaction
         if (contentLowerCase.contains("among")) {
             message.addReaction(Emoji.fromFormatted("<:imposter:792647479589994516>")).queue();
         }
@@ -46,12 +46,12 @@ public class Messenger extends ListenerAdapter {
         // responders in funny server
         if (event.getGuild().getId().equals(System.getenv("funnyServer"))) {
 
-            // funny ping
+            // target ping
             if (contentLowerCase.contains(System.getenv("trigger"))) {
                 message.reply("<@" + System.getenv("targetID") + "> wakey wakey").queue();
             }
 
-            // tweakin timeout
+            // timeout user for "tweakin"
             if (contentLowerCase.contains("tweakin")) {
                 event.getGuild().timeoutFor(message.getAuthor(), 37, TimeUnit.SECONDS).queue();
                 message.reply("smh").queue();
@@ -59,42 +59,62 @@ public class Messenger extends ListenerAdapter {
         }
     }
 
-//    public void dadReplyNEW(Message message, String content) {
-//        /*
-//            Goal: recognize "im" regardless of non-letter chars before and after the word
-//                  and ignore up to two non-letter chars in the middle of the word
-//
-//            Step 1: generate a new string based on 'content' that does not contain non-keyboard characters
-//            Step 2: locate index of "im", if any            -- arrays?
-//            Step 3: if found, check
-//         */
-//        ArrayList<String> words = new ArrayList<String>();
-//        String temp = "";
-//
-//        for (int i=0; i<content.length(); i++) {
-//            if (content.substring(i, i+1).)
-//            temp += content.substring(i, i+1);
-//
-//            if (temp.equals(" ")) {
-//                words.add(temp.substring(0, temp.length()-1));
-//                temp = "";
-//            }
-//        }
-//    }
+    public ArrayList<String> messageContentToArrayList(String content) {
+        ArrayList<String> words = new ArrayList<String>();
+        StringBuilder temp = new StringBuilder();
 
-    public String dadReply(Message message, String content) {
+        for (int i=0; i<content.length(); i++) {
+            char currentLetter = content.charAt(i);
+
+            // only allows letters and nums
+            if (Character.isAlphabetic(currentLetter) || Character.isDigit(currentLetter)) {
+                temp.append(currentLetter);
+            }
+
+            // exits on final letter
+            if (i == content.length()-1) {
+                words.add(temp.toString());
+                break;
+            }
+
+            // checks if whitespace
+            if (Character.isWhitespace(currentLetter)) {
+                words.add(temp.toString());
+                temp = new StringBuilder();
+            }
+        }
+
+        return words;
+    }
+
+    public String dadReply(String content) {
         String msg;
+
+        // checks for various versions of "im"
         if (content.toLowerCase().contains("im ")) {
             msg = "hi " + content.substring(content.toLowerCase().indexOf("im ") + 3);
         }
-        else {
+        else if (content.toLowerCase().contains("i'm ")) {
             msg = "hi " + content.substring(content.toLowerCase().indexOf("i'm ") + 4);
+        }
+        else {
+            msg = "hi " + content.substring(content.toLowerCase().indexOf("i’m ") + 4);
+        }
+
+        // reciprocates if caps
+        if (content.toUpperCase().equals(content)) {
+            msg = "HI " + msg.substring(3);
+        }
+
+        // prevents reversal, ex; User: "im im dumb" \ Bot: "hi im dumb"
+        if (msg.toLowerCase().contains("im") || msg.toLowerCase().contains("i'm") || msg.toLowerCase().contains("i’m")) {
+            return "dont u dare put words in my mouth.";
         }
 
         return msg;
     }
 
-    public void nameResponse (Message message, RichCustomEmoji emoji) {
+    public String nameResponse () {
         String[] responses = new String[] {
                 "ay, im walkin' over here",
                 "whaddup boss",
@@ -104,8 +124,8 @@ public class Messenger extends ListenerAdapter {
                 "ill be right there, press alt+f4 to see a cool trick in the meantime",
                 "ready to hop on amogus?"
         };
-        int num = (int)(Math.random()*responses.length);
 
-        message.reply(responses[num]).queue();
+        int num = (int)(Math.random()*responses.length);
+        return responses[num];
     }
 }
