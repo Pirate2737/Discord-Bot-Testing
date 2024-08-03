@@ -14,8 +14,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- https://github.com/discord-jda/JDA/releases -->
     <dependencies>
+        <!-- https://github.com/discord-jda/JDA/releases -->
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
