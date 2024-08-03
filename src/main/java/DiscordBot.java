@@ -1,15 +1,11 @@
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -21,16 +17,28 @@ import net.dv8tion.jda.api.managers.Presence;
 import javax.security.auth.login.LoginException;
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class DiscordBot {
+
+    private static JDA jda;
+
     public static void main(String[] args) throws LoginException {
 
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
         api.addEventListeners(new Messenger(), new SlashCommands(), new Music());
-        api.enableIntents(GatewayIntent.MESSAGE_CONTENT);
+        api.enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES);
+        api.setMemberCachePolicy(MemberCachePolicy.ALL);
+        api.setChunkingFilter(ChunkingFilter.ALL);
         api.setStatus(OnlineStatus.DO_NOT_DISTURB);
 
-        JDA jda = api.build();
+        jda = api.build();
 
         // Shutdown hook to close bot
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -38,11 +46,11 @@ public class DiscordBot {
             System.out.println("Shutdown hook ran!");
         }));
 
-        readActivityFromJSON("status.json", jda.getPresence());
+        readActivityFromJSON("status.json");
         slashCommands(jda);
     }
 
-    public static void readActivityFromJSON(String fileName, Presence presence) {
+    public static void readActivityFromJSON(String fileName) {
         try {
             String contentFromFile = new String(Files.readAllBytes(Paths.get(fileName)));
             JSONObject activity = new JSONObject(contentFromFile);
@@ -51,7 +59,7 @@ public class DiscordBot {
                 String type = activity.getString("Activity Type");
                 String status = activity.getString("Status");
 
-                setActivity(presence, type, status);
+                setActivity(type, status);
             }
 
         } catch (IOException | JSONException e) {
@@ -76,7 +84,8 @@ public class DiscordBot {
     }
 
     // set status method
-    public static void setActivity(Presence presence, String activity, String status) {
+    public static void setActivity(String activity, String status) {
+        Presence presence = jda.getPresence();
 
         switch (activity) {
             case "playing":
@@ -138,5 +147,18 @@ public class DiscordBot {
         );
 
         commands.queue();
+    }
+
+    public static void sendMessageToUser(Long userID, String message) {
+        jda.retrieveUserById(userID).queue();
+        User user = jda.getUserById(userID);
+
+        assert user != null;
+        user.openPrivateChannel().queue(privateChannel -> {
+            privateChannel.sendMessage(message).queue(
+                    success -> System.out.println("Message sent successfully."),
+                    failure -> System.err.println("Failed to send message: " + failure.getMessage())
+            );
+        });
     }
 }

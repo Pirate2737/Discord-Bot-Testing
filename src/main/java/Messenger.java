@@ -1,11 +1,12 @@
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-
-import static java.lang.Thread.sleep;
 
 public class Messenger extends ListenerAdapter {
 
@@ -23,17 +24,12 @@ public class Messenger extends ListenerAdapter {
             message.getChannel().sendTyping().queue();
 
             if (rng > 50) {
-                try {
-                    sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                message.reply(dadReply(content)).queue();
+                message.reply(dadReply(content)).queueAfter(1, TimeUnit.SECONDS);
             }
         }
 
         // response to its own name
-        if (content.contains(System.getenv("botID")) || contentLowerCase.contains(System.getenv("botName"))) {
+        if (content.contains("<@" + System.getenv("botID") + ">") || contentLowerCase.contains(System.getenv("botName"))) {
             // event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size())))
             message.reply(nameResponse()).queue();
         }
@@ -44,7 +40,7 @@ public class Messenger extends ListenerAdapter {
         }
 
         // responders in funny server
-        if (event.getGuild().getId().equals(System.getenv("funnyServer"))) {
+        if (event.getChannelType().isGuild() && event.getGuild().getId().equals(System.getenv("funnyServer"))) {
 
             // target ping
             if (contentLowerCase.contains(System.getenv("trigger"))) {
@@ -53,13 +49,23 @@ public class Messenger extends ListenerAdapter {
 
             // timeout user for "tweakin"
             if (contentLowerCase.contains("tweakin")) {
-                event.getGuild().timeoutFor(message.getAuthor(), 37, TimeUnit.SECONDS).queue();
                 message.reply("smh").queue();
+
+                try {
+                    event.getGuild().timeoutFor(message.getAuthor(), 37, TimeUnit.SECONDS).queue();
+                }
+                catch (InsufficientPermissionException e) {
+                    DiscordBot.sendMessageToUser(Long.parseLong(System.getenv("ownerID")), "Permission Issue in Server " + event.getGuild());
+                }
             }
+       }
+
+        if (event.isFromType(ChannelType.PRIVATE)) {
+            DirectMessenger.mailman(event, message, content);
         }
     }
 
-    public ArrayList<String> messageContentToArrayList(String content) {
+    public static ArrayList<String> messageContentToArrayList(String content) {
         ArrayList<String> words = new ArrayList<String>();
         StringBuilder temp = new StringBuilder();
 
@@ -114,7 +120,7 @@ public class Messenger extends ListenerAdapter {
         return msg;
     }
 
-    public String nameResponse () {
+    public String nameResponse() {
         String[] responses = new String[] {
                 "ay, im walkin' over here",
                 "whaddup boss",
@@ -122,7 +128,9 @@ public class Messenger extends ListenerAdapter {
                 "go away",
                 "stop im on roblox rn",
                 "ill be right there, press alt+f4 to see a cool trick in the meantime",
-                "ready to hop on amogus?"
+                "ready to hop on amogus?",
+                "not rn, my cat is eating my dog",
+                "🥱"
         };
 
         int num = (int)(Math.random()*responses.length);

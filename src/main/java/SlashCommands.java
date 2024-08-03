@@ -53,7 +53,7 @@ public class SlashCommands extends ListenerAdapter {
     }
 
     public void setActivityHandler (SlashCommandInteractionEvent event, String activityType, String content) {
-        if(!event.getUser().getId().equals(System.getenv("ownerID"))) {
+        if (!event.getUser().getId().equals(System.getenv("ownerID"))) {
             event.reply("fine").queue();
         }
         else {
@@ -61,12 +61,12 @@ public class SlashCommands extends ListenerAdapter {
         }
 
         DiscordBot.writeActivityToJSON(activityType, content);
-        DiscordBot.setActivity(event.getJDA().getPresence(), activityType, content);
+        DiscordBot.setActivity(activityType, content);
     }
 
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getComponentId().equals("bypassYapLimit")) {
-            if(event.getUser().equals(event.getMessage().getInteraction().getUser())) {
+            if (event.getUser().equals(event.getMessage().getInteraction().getUser())) {
                 event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
                 event.editButton(event.getButton().withDisabled(true)).queue();
             }
