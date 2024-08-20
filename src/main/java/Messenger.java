@@ -45,8 +45,7 @@ public class Messenger extends ListenerAdapter {
         }
 
         // response to its own name
-        if (content.contains("<@" + System.getenv("botID") + ">") || contentLowerCase.contains(System.getenv("botName"))) {
-            // event.getGuild().getEmojis().get((int) (Math.random()*(event.getGuild().getEmojis().size())))
+        if (content.contains("<@" + DiscordBot.getJDA().getSelfUser().getIdLong() + ">") || contentLowerCase.contains(DiscordBot.getJDA().getSelfUser().getName().toLowerCase())) {
             message.reply(nameResponse()).queue();
         }
 

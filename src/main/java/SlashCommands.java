@@ -38,6 +38,10 @@ public class SlashCommands extends ListenerAdapter {
 
                 break;
 
+            case "source":
+                event.reply("My source code can be viewed here: https://github.com/Pirate2737/Discord-Bot-Testing/tree/main/src/main/java").setEphemeral(true).queue();
+                break;
+
             default:
                 event.reply("I can't handle that command right now :(").setEphemeral(true).queue();
                 System.out.println("ERROR!! Event name: " + event.getName());

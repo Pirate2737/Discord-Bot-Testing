@@ -32,7 +32,7 @@ public class DiscordBot {
 
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
-        api.addEventListeners(new Messenger(), new SlashCommands(), new Music());
+        api.addEventListeners(new Messenger(), new SlashCommands(), new Music(), new ContextMenu());
         api.enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES);
         api.setMemberCachePolicy(MemberCachePolicy.ALL);
         api.setChunkingFilter(ChunkingFilter.ALL);
@@ -47,7 +47,12 @@ public class DiscordBot {
         }));
 
         readActivityFromJSON("status.json");
-        slashCommands(jda);
+        slashCommands();
+        contextMenuCommands();
+    }
+
+    public static JDA getJDA() {
+        return jda;
     }
 
     public static void readActivityFromJSON(String fileName) {
@@ -97,19 +102,20 @@ public class DiscordBot {
     }
 
     // all the slash commands !!!!
-    public static void slashCommands(JDA api) {
-        CommandListUpdateAction commands = api.updateCommands(); // can take upwards of an hour
+    public static void slashCommands() {
+        CommandListUpdateAction commands = jda.updateCommands(); // can take upwards of an hour
+        String botName = jda.getSelfUser().getName();
 
         // say command
         commands.addCommands (
-            Commands.slash("say", "Make the bot say a message")
+            Commands.slash("say", "Make " + botName + " say a message")
                     .addOption(STRING, "content", "Message for the bot to repeat", true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MESSAGE_SEND))
         );
 
         // set status command
         commands.addCommands(
-            Commands.slash("setactivity", "Change the bot's activity status")
+            Commands.slash("setactivity", "Change " + botName + "'s activity status")
                     .addOptions(new OptionData(STRING,"activity", "the type of status",true)
                             .addChoices(new Command.Choice("playing","playing"))
                             .addChoices(new Command.Choice("competing in","competing"))
@@ -122,7 +128,7 @@ public class DiscordBot {
 
         // join voice channel
         commands.addCommands(
-                Commands.slash("joinvc", "Have Arcaneous join a voice channel")
+                Commands.slash("joinvc", "Have " + botName + " join a voice channel")
                         .addOptions(new OptionData(CHANNEL, "vc", "Name of the voice channel", true)
                                 .setChannelTypes(ChannelType.VOICE))
                         .setGuildOnly(true)
@@ -131,9 +137,14 @@ public class DiscordBot {
 
         // leave voice channel
         commands.addCommands(
-                Commands.slash("leavevc","Have Arcaneous leave the voice channel in this server")
+                Commands.slash("leavevc","Have " + botName + " leave the voice channel in this server")
                         .setGuildOnly(true)
                         .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL))
+        );
+
+        // source code
+        commands.addCommands(
+                Commands.slash("source", "View the source code for " + botName)
         );
 
         commands.queue();
