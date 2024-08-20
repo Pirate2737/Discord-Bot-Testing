@@ -1,9 +1,12 @@
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -17,14 +20,27 @@ public class Messenger extends ListenerAdapter {
         Message message = event.getMessage();
         String content = message.getContentRaw();
         String contentLowerCase = message.getContentRaw().toLowerCase();
-        ArrayList<String> words = messageContentToArrayList(content);
+        ArrayList<String> words = messageContentToArrayList(contentLowerCase);
 
-        // dad joke
-        if (contentLowerCase.contains("im ") || contentLowerCase.contains("i'm ") || contentLowerCase.contains("i’m ")) {
+        //
+        if (contentLowerCase.equals("!amogusify")) {
+            message.delete().queue();
+
+            message.reply("i love amogus. which channels?").addActionRow(
+                    StringSelectMenu.create("amogus-channels")
+                            .addOption("This Channel", "this", Emoji.fromUnicode("U+1F93C"))
+                            .addOption("All Channels", "all", Emoji.fromUnicode("U+1F479"))
+                            .addOption("Delete This", "null", Emoji.fromUnicode("U+274C"))
+                            .build())
+                    .queue();
+        }
+
+        // dad joke NEW
+        if (words.size() > 1 && words.subList(0, words.size()-1).contains("im")) {
             message.getChannel().sendTyping().queue();
 
             if (rng > 50) {
-                message.reply(dadReply(content)).queueAfter(1, TimeUnit.SECONDS);
+                message.reply(dadReply(words)).queueAfter(1, TimeUnit.SECONDS);
             }
         }
 
@@ -66,7 +82,7 @@ public class Messenger extends ListenerAdapter {
     }
 
     public static ArrayList<String> messageContentToArrayList(String content) {
-        ArrayList<String> words = new ArrayList<String>();
+        ArrayList<String> words = new ArrayList<>();
         StringBuilder temp = new StringBuilder();
 
         for (int i=0; i<content.length(); i++) {
@@ -93,31 +109,19 @@ public class Messenger extends ListenerAdapter {
         return words;
     }
 
-    public String dadReply(String content) {
-        String msg;
+    public String dadReply(ArrayList<String> words) {
+        StringBuilder msg = new StringBuilder("hi ");
 
-        // checks for various versions of "im"
-        if (content.toLowerCase().contains("im ")) {
-            msg = "hi " + content.substring(content.toLowerCase().indexOf("im ") + 3);
-        }
-        else if (content.toLowerCase().contains("i'm ")) {
-            msg = "hi " + content.substring(content.toLowerCase().indexOf("i'm ") + 4);
-        }
-        else {
-            msg = "hi " + content.substring(content.toLowerCase().indexOf("i’m ") + 4);
+        // reassembler -- break into new method?
+        for (String word : words.subList(words.indexOf("im")+1, words.size())) {
+            if (word.equalsIgnoreCase("and") && words.indexOf("and") > 1) {
+                break;
+            }
+
+            msg.append(word).append(" ");
         }
 
-        // reciprocates if caps
-        if (content.toUpperCase().equals(content)) {
-            msg = "HI " + msg.substring(3);
-        }
-
-        // prevents reversal, ex; User: "im im dumb" \ Bot: "hi im dumb"
-        if (msg.toLowerCase().contains("im") || msg.toLowerCase().contains("i'm") || msg.toLowerCase().contains("i’m")) {
-            return "dont u dare put words in my mouth.";
-        }
-
-        return msg;
+        return msg.toString();
     }
 
     public String nameResponse() {
@@ -135,5 +139,33 @@ public class Messenger extends ListenerAdapter {
 
         int num = (int)(Math.random()*responses.length);
         return responses[num];
+    }
+
+    public void amogusify(TextChannel channel) {
+        channel.sendMessage("a").queue();
+        channel.sendMessage("m").queue();
+        channel.sendMessage("o").queue();
+        channel.sendMessage("n").queue();
+        channel.sendMessage("g").queue();
+        channel.sendMessage("** **").queue();
+        channel.sendMessage("u").queue();
+        channel.sendMessage("s").queue();
+    }
+
+    // Dropdown Menu Handler
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        if (event.getComponentId().equals("amogus-channels")) {
+            event.reply("👨‍🎓").setEphemeral(true).queue();
+            event.getMessage().delete().queue();
+
+            switch (event.getValues().getFirst()) {
+                case "all" -> {
+                    for (TextChannel channel : event.getGuild().getTextChannels()) {
+                        amogusify(channel);
+                    }
+                }
+                case "this" -> amogusify(event.getChannel().asTextChannel());
+            }
+        }
     }
 }

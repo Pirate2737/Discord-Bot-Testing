@@ -16,6 +16,7 @@ public class DirectMessenger extends Messenger {
 
                     DiscordBot.sendMessageToUser(userID, messageToSend);
                     message.addReaction(Emoji.fromUnicode("U+1F44D")).queue();
+
                 } catch (IndexOutOfBoundsException | NumberFormatException e) {
                     event.getChannel().sendMessage("Missing arguments! Ex: `!dm [userID] [message]`").queue();
                 } catch (UnsupportedOperationException e) {

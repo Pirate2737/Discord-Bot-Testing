@@ -1,7 +1,11 @@
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+
+import java.util.Objects;
 
 public class SlashCommands extends ListenerAdapter {
     public void onSlashCommandInteraction (SlashCommandInteractionEvent event) {
@@ -47,6 +51,7 @@ public class SlashCommands extends ListenerAdapter {
                             Button.danger("bypassYapLimit","Bypass Yap Limit 👎")
                     )
                     .queue();
+            return;
         }
 
         event.reply(content).queue();
@@ -64,15 +69,21 @@ public class SlashCommands extends ListenerAdapter {
         DiscordBot.setActivity(activityType, content);
     }
 
+    // Button Handler
     public void onButtonInteraction(ButtonInteractionEvent event) {
-        if (event.getComponentId().equals("bypassYapLimit")) {
-            if (event.getUser().equals(event.getMessage().getInteraction().getUser())) {
-                event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
-                event.editButton(event.getButton().withDisabled(true)).queue();
+        User userInteractor = Objects.requireNonNull(event.getMessage().getInteraction()).getUser();
+
+        switch (event.getComponentId()) {
+            case "bypassYapLimit" -> {
+                if (event.getUser().equals(userInteractor)) {
+                    event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
+                    event.editButton(event.getButton().withDisabled(true)).queue();
+                } else {
+                    event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
+                }
             }
-            else {
-                event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
-            }
+
+            default -> event.reply("I can't handle that interaction right now :(").setEphemeral(true).queue();
         }
     }
 

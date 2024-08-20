@@ -63,7 +63,7 @@ public class DiscordBot {
             }
 
         } catch (IOException | JSONException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
         }
     }
 
@@ -88,21 +88,11 @@ public class DiscordBot {
         Presence presence = jda.getPresence();
 
         switch (activity) {
-            case "playing":
-                presence.setActivity(Activity.playing(status));
-                break;
-            case "competing":
-                presence.setActivity(Activity.competing(status));
-                break;
-            case "listening":
-                presence.setActivity(Activity.listening(status));
-                break;
-            case "streaming":
-                presence.setActivity(Activity.streaming(status, "https://twitch.tv/innerslothdevs"));
-                break;
-            case "custom":
-                presence.setActivity(Activity.customStatus(status));
-                break;
+            case "playing"   -> presence.setActivity(Activity.playing(status));
+            case "competing" -> presence.setActivity(Activity.competing(status));
+            case "listening" -> presence.setActivity(Activity.listening(status));
+            case "streaming" -> presence.setActivity(Activity.streaming(status, "https://twitch.tv/innerslothdevs"));
+            case "custom"    -> presence.setActivity(Activity.customStatus(status));
         }
     }
 
@@ -125,7 +115,7 @@ public class DiscordBot {
                             .addChoices(new Command.Choice("competing in","competing"))
                             .addChoices(new Command.Choice("listening to", "listening"))
                             .addChoices(new Command.Choice("streaming", "streaming"))
-                            .addChoices(new Command.Choice("custom Status", "custom")))
+                            .addChoices(new Command.Choice("custom status", "custom")))
                     .addOptions(new OptionData(STRING, "content", "Message to be displayed alongside the activity type", true)
                             .setMaxLength(128))
         );
@@ -149,16 +139,21 @@ public class DiscordBot {
         commands.queue();
     }
 
+    public static void contextMenuCommands() {
+        jda.updateCommands().addCommands(
+                Commands.context(Command.Type.USER, "Get user avatar"),
+                Commands.message("Count words")
+        ).queue();
+    }
+
     public static void sendMessageToUser(Long userID, String message) {
         jda.retrieveUserById(userID).queue();
         User user = jda.getUserById(userID);
 
         assert user != null;
-        user.openPrivateChannel().queue(privateChannel -> {
-            privateChannel.sendMessage(message).queue(
-                    success -> System.out.println("Message sent successfully."),
-                    failure -> System.err.println("Failed to send message: " + failure.getMessage())
-            );
-        });
+        user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(message).queue(
+                success -> System.out.println("Message sent successfully."),
+                failure -> System.err.println("Failed to send message: " + failure.getMessage())
+        ));
     }
 }
