@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
@@ -64,12 +65,13 @@ public class Messenger extends ListenerAdapter {
 
             // timeout user for "tweakin"
             if (contentLowerCase.contains("tweakin")) {
-                message.reply("smh").queue();
 
                 try {
+                    message.reply("smh").queue();
                     event.getGuild().timeoutFor(message.getAuthor(), 37, TimeUnit.SECONDS).queue();
                 }
-                catch (InsufficientPermissionException e) {
+                catch (InsufficientPermissionException | HierarchyException e) {
+                    message.reply("smh (give me perms to timeout u)").queue();
                     DiscordBot.sendMessageToUser(Long.parseLong(System.getenv("ownerID")), "Permission Issue in Server " + event.getGuild());
                 }
             }

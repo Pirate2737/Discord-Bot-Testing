@@ -1,7 +1,6 @@
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
@@ -78,16 +77,17 @@ public class SlashCommands extends ListenerAdapter {
         User userInteractor = Objects.requireNonNull(event.getMessage().getInteraction()).getUser();
 
         switch (event.getComponentId()) {
-            case "bypassYapLimit" -> {
+            case "bypassYapLimit":
                 if (event.getUser().equals(userInteractor)) {
                     event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
                     event.editButton(event.getButton().withDisabled(true)).queue();
                 } else {
                     event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
                 }
-            }
+                break;
 
-            default -> event.reply("I can't handle that interaction right now :(").setEphemeral(true).queue();
+            default:
+                event.reply("I can't handle that interaction right now :(").setEphemeral(true).queue();
         }
     }
 

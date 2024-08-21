@@ -6,7 +6,7 @@ public class ContextMenu extends ListenerAdapter {
 
     public void onUserContextInteraction(UserContextInteractionEvent event) {
         if (event.getName().equals("Get user avatar")) {
-            event.reply("Avatar: " + event.getTarget().getEffectiveAvatarUrl()).setEphemeral(true).queue();
+            event.reply(event.getTarget().getEffectiveAvatarUrl()).setEphemeral(true).queue();
         }
     }
 

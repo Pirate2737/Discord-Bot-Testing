@@ -27,7 +27,7 @@ public class DiscordBot {
 
     private static JDA jda;
 
-    public static void main(String[] args) throws LoginException {
+    public static void main(String[] args) throws LoginException, InterruptedException {
 
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
@@ -47,6 +47,7 @@ public class DiscordBot {
 
         readActivityFromJSON("status.json");
         applicationCommands();
+        jda.awaitReady();
     }
 
     public static void readActivityFromJSON(String fileName) {
@@ -62,7 +63,7 @@ public class DiscordBot {
             }
 
         } catch (IOException | JSONException e) {
-            System.err.println(e);
+            System.out.println(e.fillInStackTrace().toString());
         }
     }
 
