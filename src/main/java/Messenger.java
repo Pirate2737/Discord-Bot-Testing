@@ -22,8 +22,12 @@ public class Messenger extends ListenerAdapter {
         String content = message.getContentRaw();
         String contentLowerCase = message.getContentRaw().toLowerCase();
         ArrayList<String> words = messageContentToArrayList(contentLowerCase);
+        
+        if (event.isFromType(ChannelType.PRIVATE)) {
+            DirectMessenger.mailman(event, message, content);
+        }
 
-        //
+        // amogus in channel
         if (contentLowerCase.equals("!amogusify")) {
             message.delete().queue();
 
@@ -72,14 +76,10 @@ public class Messenger extends ListenerAdapter {
                 }
                 catch (InsufficientPermissionException | HierarchyException e) {
                     message.reply("smh (give me perms to timeout u)").queue();
-                    DiscordBot.sendMessageToUser(Long.parseLong(System.getenv("ownerID")), "Permission Issue in Server " + event.getGuild());
+                    DirectMessenger.sendMessageToUser(Long.parseLong(System.getenv("ownerID")), "Permission Issue in Server " + event.getGuild());
                 }
             }
        }
-
-        if (event.isFromType(ChannelType.PRIVATE)) {
-            DirectMessenger.mailman(event, message, content);
-        }
     }
 
     public static ArrayList<String> messageContentToArrayList(String content) {

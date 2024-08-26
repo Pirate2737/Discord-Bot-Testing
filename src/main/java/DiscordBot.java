@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -95,17 +94,6 @@ public class DiscordBot {
         }
     }
 
-    public static void sendMessageToUser(Long userID, String message) {
-        jda.retrieveUserById(userID).queue();
-        User user = jda.getUserById(userID);
-
-        assert user != null;
-        user.openPrivateChannel().queue(privateChannel -> privateChannel.sendMessage(message).queue(
-                success -> System.out.println("Message sent successfully."),
-                failure -> System.err.println("Failed to send message: " + failure.getMessage())
-        ));
-    }
-
     public static void applicationCommands() {
         String botName = jda.getSelfUser().getName();
 
@@ -152,6 +140,9 @@ public class DiscordBot {
 
             // Get User Avatar
             Commands.context(Command.Type.USER, "Get user avatar"),
+
+            // Amogus bomb
+            Commands.context(Command.Type.USER, "amogus bomb"),
 
             // Count Words
             Commands.message("Count words")
