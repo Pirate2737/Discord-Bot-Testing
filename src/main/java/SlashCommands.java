@@ -49,7 +49,7 @@ public class SlashCommands extends ListenerAdapter {
                 int day = Objects.requireNonNull(event.getOption("day")).getAsInt();
                 int year = Objects.requireNonNull(event.getOption("year")).getAsInt();
                 int hour = 0; int minute = 0; int seconds = 0;
-                double UTCOffset = -5;
+                double UTCOffset = -4; // assumption of EDT
 
                 if (event.getOption("hour") != null) {
                     hour = Objects.requireNonNull(event.getOption("hour")).getAsInt();
@@ -66,7 +66,7 @@ public class SlashCommands extends ListenerAdapter {
 
                 // System.out.println("Year: " + year + "\nMonth: " + month + "\nDay: " + day + "\nHour: " + hour + "\nMinute: " + minute + "\nSeconds: " + seconds + "\nUTC Offset: " + UTCOffset);
                 LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute, seconds);
-                long unixTimeStamp = dateTime.toEpochSecond(ZoneOffset.ofHoursMinutes(((int) UTCOffset), (int) ((UTCOffset%1)*60))); // time zone offset for est // not great
+                long unixTimeStamp = dateTime.toEpochSecond(ZoneOffset.ofHoursMinutes(((int) UTCOffset), (int) ((UTCOffset%1)*60)));
 
                 event.reply("<t:" + unixTimeStamp + ":d> " + "`<t:" + unixTimeStamp + ":d>`").setEphemeral(true).addActionRow(
                         StringSelectMenu.create("timestamp-options")

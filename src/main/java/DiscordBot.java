@@ -131,7 +131,7 @@ public class DiscordBot {
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL)),
 
             // time --> discord time stamp converter
-                Commands.slash("timestampconvert", "Converts a time to the discord timestamp format")
+                Commands.slash("timestampconvert", "Converts a time to the Discord timestamp format")
                         .addOptions(new OptionData(INTEGER, "month", "1-12", true)
                                 .setMinValue(1)
                                 .setMaxValue(12))
@@ -149,7 +149,7 @@ public class DiscordBot {
                         .addOptions(new OptionData(INTEGER, "seconds", "0-59. Defaults to 0", false)
                                 .setMinValue(0)
                                 .setMaxValue(59))
-                        .addOptions(new OptionData(NUMBER, "utc", "Time zone offset from UTC standard. Defaults to -5 for EST", false)
+                        .addOptions(new OptionData(NUMBER, "utc", "Time zone offset from UTC standard. Defaults to -4 for EDT", false)
                                 .setMinValue(-12)
                                 .setMaxValue(14)),
 
