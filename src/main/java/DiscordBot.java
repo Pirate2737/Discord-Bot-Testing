@@ -12,7 +12,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.managers.Presence;
-import javax.security.auth.login.LoginException;
 import static net.dv8tion.jda.api.interactions.commands.OptionType.*;
 
 import org.json.JSONException;
@@ -47,6 +46,7 @@ public class DiscordBot {
         readActivityFromJSON("status.json");
         applicationCommands();
         jda.awaitReady();
+
     }
 
     public static void readActivityFromJSON(String fileName) {
@@ -129,6 +129,29 @@ public class DiscordBot {
             Commands.slash("leavevc","Have " + botName + " leave the voice channel in this server")
                     .setGuildOnly(true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL)),
+
+            // time --> discord time stamp converter
+                Commands.slash("timestampconvert", "Converts a time to the discord timestamp format")
+                        .addOptions(new OptionData(INTEGER, "month", "1-12", true)
+                                .setMinValue(1)
+                                .setMaxValue(12))
+                        .addOptions(new OptionData(INTEGER, "day", "1-31", true)
+                                .setMinValue(1)
+                                .setMaxValue(31))
+                        .addOptions(new OptionData(INTEGER, "year", "1970-any", true)
+                                .setMinValue(1970))
+                        .addOptions(new OptionData(INTEGER, "hour", "0-23 (Military time). Defaults to 0", false)
+                                .setMinValue(0)
+                                .setMaxValue(23))
+                        .addOptions(new OptionData(INTEGER, "minute", "0-59. Defaults to 0", false)
+                                .setMinValue(0)
+                                .setMaxValue(59))
+                        .addOptions(new OptionData(INTEGER, "seconds", "0-59. Defaults to 0", false)
+                                .setMinValue(0)
+                                .setMaxValue(59))
+                        .addOptions(new OptionData(NUMBER, "utc", "Time zone offset from UTC standard. Defaults to -5 for EST", false)
+                                .setMinValue(-12)
+                                .setMaxValue(14)),
 
             // ping
             Commands.slash("ping", "Returns the bot's latency"),

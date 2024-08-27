@@ -2,10 +2,14 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
@@ -13,12 +17,12 @@ public class SlashCommands extends ListenerAdapter {
     public void onSlashCommandInteraction (SlashCommandInteractionEvent event) {
         switch (event.getName()) {
             case "say":
-                say(event, event.getOption("content").getAsString());
+                say(event, Objects.requireNonNull(event.getOption("content")).getAsString());
                 break;
 
             case "setactivity":
-                String activityType = event.getOption("activity").getAsString();
-                String content = event.getOption("content").getAsString();
+                String activityType = Objects.requireNonNull(event.getOption("activity")).getAsString();
+                String content = Objects.requireNonNull(event.getOption("content")).getAsString();
 
                 System.out.println(event.getUser().getName() + " used the setstatus command: " + activityType + " " + content);
                 setActivityHandler(event, activityType, content);
@@ -26,8 +30,8 @@ public class SlashCommands extends ListenerAdapter {
                 break;
 
             case "joinvc":
-                String channelID =  event.getOption("vc").getAsString();
-                VoiceChannel channel = event.getGuild().getVoiceChannelById(channelID);
+                String channelID =  Objects.requireNonNull(event.getOption("vc")).getAsString();
+                VoiceChannel channel = Objects.requireNonNull(event.getGuild()).getVoiceChannelById(channelID);
                 AudioManager manager = event.getGuild().getAudioManager();
 
                 manager.openAudioConnection(channel);
@@ -35,9 +39,46 @@ public class SlashCommands extends ListenerAdapter {
                 break;
 
             case "leavevc":
-                event.getGuild().getAudioManager().closeAudioConnection();
+                Objects.requireNonNull(event.getGuild()).getAudioManager().closeAudioConnection();
                 event.reply("👍").queue();
 
+                break;
+
+            case "timestampconvert":
+                int month = Objects.requireNonNull(event.getOption("month")).getAsInt();
+                int day = Objects.requireNonNull(event.getOption("day")).getAsInt();
+                int year = Objects.requireNonNull(event.getOption("year")).getAsInt();
+                int hour = 0; int minute = 0; int seconds = 0;
+                double UTCOffset = -5;
+
+                if (event.getOption("hour") != null) {
+                    hour = Objects.requireNonNull(event.getOption("hour")).getAsInt();
+                }
+                if (event.getOption("minute") != null) {
+                    minute = Objects.requireNonNull(event.getOption("minute")).getAsInt();
+                }
+                if (event.getOption("seconds") != null) {
+                    seconds = Objects.requireNonNull(event.getOption("seconds")).getAsInt();
+                }
+                if (event.getOption("utc") != null) {
+                    UTCOffset = Objects.requireNonNull(event.getOption("utc")).getAsDouble();
+                }
+
+                // System.out.println("Year: " + year + "\nMonth: " + month + "\nDay: " + day + "\nHour: " + hour + "\nMinute: " + minute + "\nSeconds: " + seconds + "\nUTC Offset: " + UTCOffset);
+                LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute, seconds);
+                long unixTimeStamp = dateTime.toEpochSecond(ZoneOffset.ofHoursMinutes(((int) UTCOffset), (int) ((UTCOffset%1)*60))); // time zone offset for est // not great
+
+                event.reply("<t:" + unixTimeStamp + ":d> " + "`<t:" + unixTimeStamp + ":d>`").setEphemeral(true).addActionRow(
+                        StringSelectMenu.create("timestamp-options")
+                                .addOption("Month/Day/Year", "d")
+                                .addOption("Month Day, Year Time", "f")
+                                .addOption("Time", "t")
+                                .addOption("Month Day, Year", "D")
+                                .addOption("Weekday, Month Day, Year Time", "F")
+                                .addOption("Time since", "R")
+                                .addOption("Hours:Minutes:Seconds", "T")
+                                .build())
+                        .queue();
                 break;
 
             case "ping":
@@ -100,4 +141,22 @@ public class SlashCommands extends ListenerAdapter {
         }
     }
 
+    // Dropdown Menu Handler
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+        if (event.getComponentId().equals("timestamp-options")) {
+            String old = event.getMessage().getContentRaw();
+            StringBuilder out = new StringBuilder();
+
+            for (int i = 0; i < old.length(); i++) {
+                if (Character.isAlphabetic(old.charAt(i)) && old.charAt(i-1) == ':') {
+                    out.append(event.getValues().getFirst());
+                }
+                else {
+                    out.append(old.charAt(i));
+                }
+            }
+
+            event.editMessage(out.toString()).queue();
+        }
+    }
 }

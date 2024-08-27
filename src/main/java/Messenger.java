@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class Messenger extends ListenerAdapter {
@@ -157,7 +158,7 @@ public class Messenger extends ListenerAdapter {
 
             switch (event.getValues().getFirst()) {
                 case "all" -> {
-                    for (TextChannel channel : event.getGuild().getTextChannels()) {
+                    for (TextChannel channel : Objects.requireNonNull(event.getGuild()).getTextChannels()) {
                         amogusify(channel);
                     }
                 }
