@@ -143,14 +143,10 @@ public class Messenger extends ListenerAdapter {
     }
 
     public void amogusify(TextChannel channel) {
-        channel.sendMessage("a").queue();
-        channel.sendMessage("m").queue();
-        channel.sendMessage("o").queue();
-        channel.sendMessage("n").queue();
-        channel.sendMessage("g").queue();
-        channel.sendMessage("** **").queue();
-        channel.sendMessage("u").queue();
-        channel.sendMessage("s").queue();
+        String[] lettersToSend = new String[] {"a", "m", "o", "n", "g", "** **", "u", "s"};
+        for (String letter : lettersToSend) {
+            channel.sendMessage(letter).queue();
+        }
     }
 
     // Dropdown Menu Handler

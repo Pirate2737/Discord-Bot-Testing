@@ -26,11 +26,11 @@ public class DiscordBot {
 
     private static JDA jda;
 
-    public static void main(String[] args) throws LoginException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException {
 
         JDABuilder api = JDABuilder.createDefault(System.getenv("token"));
 
-        api.addEventListeners(new Messenger(), new SlashCommands(), new ContextMenu(), new Music());
+        api.addEventListeners(new Messenger(), new SlashCommands(), new ContextMenu());
         api.enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES);
         api.setMemberCachePolicy(MemberCachePolicy.ALL);
         api.setChunkingFilter(ChunkingFilter.ALL);
@@ -130,6 +130,8 @@ public class DiscordBot {
                     .setGuildOnly(true)
                     .setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VIEW_CHANNEL)),
 
+            // ping
+            Commands.slash("ping", "Returns the bot's latency"),
 
             // source code
             Commands.slash("source", "View the source code for " + botName),

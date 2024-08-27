@@ -1,9 +1,12 @@
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class SlashCommands extends ListenerAdapter {
@@ -23,18 +26,27 @@ public class SlashCommands extends ListenerAdapter {
                 break;
 
             case "joinvc":
-                Music.joinVoice(event, event.getOption("vc").getAsString());
+                String channelID =  event.getOption("vc").getAsString();
+                VoiceChannel channel = event.getGuild().getVoiceChannelById(channelID);
+                AudioManager manager = event.getGuild().getAudioManager();
+
+                manager.openAudioConnection(channel);
                 event.reply("👍").queue();
                 break;
 
             case "leavevc":
-                if (!Music.leaveVoice(event)) {
-                    event.reply("I am not in any voice channel in this sever").queue();
-                }
-                else {
-                    event.reply("👍").queue();
-                }
+                event.getGuild().getAudioManager().closeAudioConnection();
+                event.reply("👍").queue();
 
+                break;
+
+            case "ping":
+                event.deferReply(true).queue();
+                event.getHook().sendMessage("Pong!").queue(message -> {
+                    // Measure the time between the command and the reply
+                    long ping = event.getInteraction().getTimeCreated().until(message.getTimeCreated(), ChronoUnit.MILLIS);
+                    message.editMessage("Pong! `" + ping + "ms`").queue();
+                });
                 break;
 
             case "source":
@@ -76,18 +88,15 @@ public class SlashCommands extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent event) {
         User userInteractor = Objects.requireNonNull(event.getMessage().getInteraction()).getUser();
 
-        switch (event.getComponentId()) {
-            case "bypassYapLimit":
-                if (event.getUser().equals(userInteractor)) {
-                    event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
-                    event.editButton(event.getButton().withDisabled(true)).queue();
-                } else {
-                    event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
-                }
-                break;
-
-            default:
-                event.reply("I can't handle that interaction right now :(").setEphemeral(true).queue();
+        if (event.getComponentId().equals("bypassYapLimit")) {
+            if (event.getUser().equals(userInteractor)) {
+                event.getInteraction().editMessage("yikers, not available rn u rulebreaker").queue(); // send a message in the channel
+                event.editButton(event.getButton().withDisabled(true)).queue();
+            } else {
+                event.reply("that is not your message to do that on es-em-aych u weirdo").setEphemeral(true).queue();
+            }
+        } else {
+            event.reply("I can't handle that interaction right now :(").setEphemeral(true).queue();
         }
     }
 
