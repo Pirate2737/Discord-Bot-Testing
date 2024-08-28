@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.managers.AudioManager;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -48,8 +49,8 @@ public class SlashCommands extends ListenerAdapter {
                 int month = Objects.requireNonNull(event.getOption("month")).getAsInt();
                 int day = Objects.requireNonNull(event.getOption("day")).getAsInt();
                 int year = Objects.requireNonNull(event.getOption("year")).getAsInt();
-                int hour = 0; int minute = 0; int seconds = 0;
-                double UTCOffset = -4; // assumption of EDT
+                int hour = 0; int minute = 0; int second = 0;
+                double utcOffset = -4; // assumption of EDT
 
                 if (event.getOption("hour") != null) {
                     hour = Objects.requireNonNull(event.getOption("hour")).getAsInt();
@@ -57,28 +58,14 @@ public class SlashCommands extends ListenerAdapter {
                 if (event.getOption("minute") != null) {
                     minute = Objects.requireNonNull(event.getOption("minute")).getAsInt();
                 }
-                if (event.getOption("seconds") != null) {
-                    seconds = Objects.requireNonNull(event.getOption("seconds")).getAsInt();
+                if (event.getOption("second") != null) {
+                    second = Objects.requireNonNull(event.getOption("second")).getAsInt();
                 }
                 if (event.getOption("utc") != null) {
-                    UTCOffset = Objects.requireNonNull(event.getOption("utc")).getAsDouble();
+                    utcOffset = Objects.requireNonNull(event.getOption("utc")).getAsDouble();
                 }
 
-                // System.out.println("Year: " + year + "\nMonth: " + month + "\nDay: " + day + "\nHour: " + hour + "\nMinute: " + minute + "\nSeconds: " + seconds + "\nUTC Offset: " + UTCOffset);
-                LocalDateTime dateTime = LocalDateTime.of(year, month, day, hour, minute, seconds);
-                long unixTimeStamp = dateTime.toEpochSecond(ZoneOffset.ofHoursMinutes(((int) UTCOffset), (int) ((UTCOffset%1)*60)));
-
-                event.reply("<t:" + unixTimeStamp + ":d> " + "`<t:" + unixTimeStamp + ":d>`").setEphemeral(true).addActionRow(
-                        StringSelectMenu.create("timestamp-options")
-                                .addOption("Month/Day/Year", "d")
-                                .addOption("Month Day, Year Time", "f")
-                                .addOption("Time", "t")
-                                .addOption("Month Day, Year", "D")
-                                .addOption("Weekday, Month Day, Year Time", "F")
-                                .addOption("Time since", "R")
-                                .addOption("Hours:Minutes:Seconds", "T")
-                                .build())
-                        .queue();
+                dateToUnixTimeConverter(event, month, day, year, hour, minute, second, utcOffset);
                 break;
 
             case "ping":
@@ -100,7 +87,7 @@ public class SlashCommands extends ListenerAdapter {
         }
     }
 
-    public void say (SlashCommandInteractionEvent event, String content) {
+    public void say(SlashCommandInteractionEvent event, String content) {
         if (content.length() > 100) {
             event.reply("stop yappin man")
                     .addActionRow(
@@ -113,7 +100,7 @@ public class SlashCommands extends ListenerAdapter {
         event.reply(content).queue();
     }
 
-    public void setActivityHandler (SlashCommandInteractionEvent event, String activityType, String content) {
+    public void setActivityHandler(SlashCommandInteractionEvent event, String activityType, String content) {
         if (!event.getUser().getId().equals(System.getenv("ownerID"))) {
             event.reply("fine").queue();
         }
@@ -123,6 +110,32 @@ public class SlashCommands extends ListenerAdapter {
 
         DiscordBot.writeActivityToJSON(activityType, content);
         DiscordBot.setActivity(activityType, content);
+    }
+
+    public void dateToUnixTimeConverter(SlashCommandInteractionEvent event, int month, int day, int year, int hour, int minute, int second, double utcOffset) {
+        // System.out.println("Year: " + year + "\nMonth: " + month + "\nDay: " + day + "\nHour: " + hour + "\nMinute: " + minute + "\nSecond: " + second + "\nUTC Offset: " + UTCOffset);
+        LocalDateTime dateTime;
+        try {
+            dateTime = LocalDateTime.of(year, month, day, hour, minute, second);
+        }
+        catch (DateTimeException e) {
+            event.reply(e.toString().substring(29)).setEphemeral(true).queue();
+            return;
+        }
+        long unixTimeStamp = dateTime.toEpochSecond(ZoneOffset.ofHoursMinutes(((int) utcOffset), (int) ((utcOffset%1)*60)));
+
+        event.reply("<t:" + unixTimeStamp + ":d> " + "`<t:" + unixTimeStamp + ":d>`").setEphemeral(true).addActionRow(
+                        StringSelectMenu.create("timestamp-options")
+                                .addOption("Month/Day/Year", "d")
+                                .addOption("Month Day, Year Time", "f")
+                                .addOption("Time", "t")
+                                .addOption("Month Day, Year", "D")
+                                .addOption("Weekday, Month Day, Year Time", "F")
+                                .addOption("Time since", "R")
+                                .addOption("Hour:Minute:Second", "T")
+                                .setPlaceholder("Time display format")
+                                .build())
+                .queue();
     }
 
     // Button Handler
